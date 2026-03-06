@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
   <title>Dashboard Slow Endpoints</title>
   <style>
     :root{
@@ -90,7 +90,13 @@
 
     main{display:flex;gap:16px}
     .left{flex:1}
-    .table-wrap{margin-top:12px;overflow:auto;border-radius:12px}
+    .table-wrap{
+      margin-top:12px;
+      overflow-x:auto;                  /* horizontal scrolling */
+      -webkit-overflow-scrolling: touch;/* smooth scrolling on iOS */
+      touch-action: pan-x pan-y;        /* allow panning on touch devices */
+      border-radius:12px;
+    }
     table{width:100%;border-collapse:collapse;min-width:900px}
     thead th{position:sticky;top:0;background:linear-gradient(180deg, rgba(11,16,32,0.12), rgba(11,16,32,0.06));padding:12px 14px;text-align:left;font-size:13px;color:var(--muted);border-bottom:1px solid rgba(0,0,0,0.04)}
     tbody tr{border-bottom:1px solid rgba(255,255,255,0.02);transition:background .12s}
@@ -120,7 +126,7 @@
     .duration-fill.high{box-shadow:0 6px 14px rgba(255,107,107,0.10);transform:translateZ(0)}
 
     .token{font-family:monospace;color:var(--muted);max-width:320px;display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .actions{display:inline-flex;gap:8px;align-items:center}
+    .actions{display:inline-flex;gap:8px;align-items:center;white-space:nowrap}
     .pill{background:rgba(255,255,255,0.02);padding:6px 8px;border-radius:999px;font-size:12px;color:var(--muted)}
 
     /* details row */
@@ -129,6 +135,16 @@
     pre{white-space:pre-wrap;margin:0;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",monospace;font-size:13px;color:var(--code)}
     /* use variable-driven color for code/path so light theme remains readable */
     .path-code, code { color: var(--code); }
+
+    /* Prevent path text from forcing vertical stacking; keep it truncated inline */
+    .path-code{
+      display:inline-block;
+      max-width:260px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      vertical-align:middle;
+    }
 
     /* ADDED: nicer/responsive details layout and scrolling to avoid breaking table */
     .details-content{
@@ -170,15 +186,36 @@
 
     /* Mobile / narrow layout fixes */
     @media (max-width:900px){
-      /* allow table to shrink and scroll horizontally instead of breaking layout */
-      table{min-width:0}
-      .table-wrap{overflow:auto}
-      /* stack detail columns vertically for small screens */
-      .details-content{flex-direction:column}
-      .details-col{max-width:100%}
-      .details-side{width:100%}
-      /* make table cells wrap text */
-      td{word-break:break-word}
+      /* keep table wider than viewport so columns remain side-by-side;
+         user can scroll horizontally instead of cells wrapping vertically */
+      table{min-width:900px}
+      .table-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch}
+
+      /* Keep detail columns side-by-side and enable horizontal scrolling (no wrapping) */
+      .details-content{
+        display:flex;
+        flex-direction:row;       /* keep columns side-by-side */
+        flex-wrap:nowrap;        /* prevent stacking vertically */
+        gap:12px;
+        align-items:flex-start;
+        overflow-x:auto;         /* horizontal scrolling */
+        -webkit-overflow-scrolling: touch;
+        padding-bottom:6px;
+        box-sizing:border-box;
+      }
+
+      /* Make children fixed-ish so they sit side-by-side */
+      .details-col, .details-side{
+        flex:0 0 auto;
+        display:inline-block;
+        vertical-align:top;
+        box-sizing:border-box;
+      }
+      .details-col{width:320px; min-width:240px; max-width:320px;}
+      .details-side{width:220px; min-width:180px;}
+
+      /* allow normal wrapping inside table cells, but keep details area horizontally scrollable */
+      td{word-break:break-word; white-space:normal}
       .details-pre{max-height:320px}
     }
   </style>
