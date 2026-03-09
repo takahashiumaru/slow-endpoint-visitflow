@@ -2,625 +2,691 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no" />
   <title>Dashboard Slow Endpoints</title>
   <style>
     :root{
       --bg:#0f1724;
-      --bg-image: linear-gradient(180deg,#071021 0%, #071827 60%);
+      --bg-image:linear-gradient(180deg,#071021 0%,#071827 60%);
       --card:#0b1220;
       --muted:#9aa4b2;
       --accent:#7c5cff;
       --danger:#ff6b6b;
-      --danger-tint: rgba(255,107,107,0.06);
-      --danger-tint-light: rgba(255,107,107,0.02);
-      --glass: rgba(255,255,255,0.03);
-      --glass-2: rgba(255,255,255,0.02);
+      --danger-tint:rgba(255,107,107,0.06);
+      --glass:rgba(255,255,255,0.03);
+      --glass-2:rgba(255,255,255,0.02);
       --text:#e6eef6;
       --code:#cde8ff;
+      --border:rgba(255,255,255,0.05);
     }
-
-    /* Light theme overrides */
-    [data-theme="light"] {
-      --bg: #ffffff; /* light background */
-      --bg-image: none; /* no dark gradient in light mode */
-      --card: #ffffff;
-      --muted: #6b7280;
-      --accent: #5b21b6;
-      --danger: #ef4444;
-      --glass: rgba(2,6,23,0.02);
-      --glass-2: rgba(2,6,23,0.01);
-      --text: #0b1220;
-      --code: #0b3b72;
+    [data-theme="light"]{
+      --bg:#f3f4f8;
+      --bg-image:none;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent:#5b21b6;
+      --danger:#ef4444;
+      --glass:rgba(0,0,0,0.02);
+      --glass-2:rgba(0,0,0,0.01);
+      --text:#0b1220;
+      --code:#0b3b72;
+      --border:rgba(0,0,0,0.08);
     }
-
     *{box-sizing:border-box}
-    html,body{height:100%}
+    html,body{height:100%;margin:0}
     body{
-      font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      margin:0;
-      background-color: var(--bg);
-      background-image: var(--bg-image);
-      background-repeat: no-repeat;
-      background-size: cover;
+      font-family:"Geist","DM Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      background-color:var(--bg);
+      background-image:var(--bg-image);
+      background-repeat:no-repeat;
+      background-size:cover;
       color:var(--text);
-      padding:24px;
-      transition: background .25s ease, color .2s ease;
+      padding:20px;
+      transition:background .2s,color .2s;
     }
 
-    header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}
-    .title{
-      display:flex;gap:12px;align-items:baseline;
-    }
-    h1{font-size:20px;margin:0}
-    .subtitle{color:var(--muted);font-size:13px}
+    /* ── HEADER ── */
+    header{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap}
+    h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.3px}
+    .subtitle{color:var(--muted);font-size:12px;margin-top:2px}
 
-    .controls{display:flex;gap:8px;align-items:center}
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      background-color: var(--card);
-      border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(2,6,23,0.06);backdrop-filter: blur(6px);
-      border:1px solid rgba(0,0,0,0.06);
-      transition: background-color .2s ease, color .2s ease;
-    }
-
-    input[type="search"], input[type="number"], select{
-      background:transparent;border:1px solid rgba(0,0,0,0.06); color:var(--muted);
-      padding:8px 10px;border-radius:8px;min-width:160px;
-    }
-    /* nicer single date input */
-    .date-input{
-      background:transparent;
-      border:1px solid rgba(0,0,0,0.06);
-      color:var(--muted);
-      padding:8px 10px;
-      border-radius:8px;
-      height:36px;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-    button{
-      background:var(--accent); color:white;border:none;padding:8px 12px;border-radius:10px;cursor:pointer;
-      font-weight:600;box-shadow:0 6px 12px rgba(124,92,255,0.12);
-      transition:opacity .12s ease, transform .08s ease;
-    }
-    button.ghost{
-      background:transparent;border:1px solid rgba(0,0,0,0.06);color:var(--muted);box-shadow:none;
-    }
-
-    main{display:flex;gap:16px}
-    .left{flex:1}
-    .table-wrap{
-      margin-top:12px;
-      overflow-x:auto;                  /* horizontal scrolling */
-      -webkit-overflow-scrolling: touch;/* smooth scrolling on iOS */
-      touch-action: pan-x pan-y;        /* allow panning on touch devices */
+    /* ── CONTROLS ── */
+    .controls-card{
+      background:var(--card);
+      border:1px solid var(--border);
       border-radius:12px;
+      padding:10px 12px;
+      display:flex;gap:8px;align-items:center;flex-wrap:wrap;
     }
-    table{width:100%;border-collapse:collapse;min-width:900px}
-    thead th{position:sticky;top:0;background:linear-gradient(180deg, rgba(11,16,32,0.12), rgba(11,16,32,0.06));padding:12px 14px;text-align:left;font-size:13px;color:var(--muted);border-bottom:1px solid rgba(0,0,0,0.04)}
-    tbody tr{border-bottom:1px solid rgba(255,255,255,0.02);transition:background .12s}
+    input[type="search"],input[type="number"],select,.date-input{
+      background:transparent;
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:6px 10px;
+      border-radius:8px;
+      font-size:13px;
+      height:34px;
+      outline:none;
+      transition:border-color .15s;
+    }
+    input[type="search"]{min-width:200px}
+    input[type="search"]:focus,select:focus,.date-input:focus{border-color:var(--accent)}
+    .date-input{width:150px;-webkit-appearance:none;appearance:none}
+    button{
+      background:var(--accent);color:#fff;border:none;padding:6px 12px;border-radius:8px;
+      cursor:pointer;font-weight:600;font-size:13px;height:34px;
+      transition:opacity .12s,transform .08s;white-space:nowrap;
+    }
+    button:hover{opacity:.88}
+    button:active{transform:scale(.97)}
+    button.ghost{
+      background:transparent;border:1px solid var(--border);
+      color:var(--muted);box-shadow:none;
+    }
+
+    /* ── MAIN CARD ── */
+    .main-card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:12px;
+      overflow:hidden;
+    }
+    .card-header{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:10px 14px;border-bottom:1px solid var(--border);
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar{
+      display:flex;gap:16px;padding:8px 14px;
+      border-bottom:1px solid var(--border);
+      font-size:12px;color:var(--muted);flex-wrap:wrap;
+    }
+    .stat{display:flex;gap:4px;align-items:center}
+    .stat-val{font-weight:700;color:var(--text)}
+    .stat-danger{color:var(--danger)}
+
+    /* ── TABLE ── */
+    .table-scroll{
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      /* Virtual scroll container */
+      position:relative;
+    }
+
+    /* Virtual scroll viewport */
+    #vp{
+      overflow-y:auto;
+      max-height:calc(100vh - 260px);
+      min-height:200px;
+      will-change:transform;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    table{width:100%;border-collapse:collapse;min-width:860px}
+    thead th{
+      position:sticky;top:0;z-index:2;
+      background:var(--card);
+      padding:10px 12px;text-align:left;
+      font-size:12px;color:var(--muted);font-weight:600;
+      border-bottom:1px solid var(--border);
+      white-space:nowrap;
+    }
+    thead th.sortable{cursor:pointer;user-select:none}
+    thead th.sortable:hover{color:var(--text)}
+    tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
     tbody tr:hover{background:var(--glass)}
-    td{padding:12px;font-size:13px;color:var(--text);vertical-align:middle}
-    .muted{color:var(--muted);font-size:12px}
-    .method-badge{
-      display:inline-block;padding:6px 8px;border-radius:999px;font-weight:700;font-size:12px;color:#071021;
-    }
+    td{padding:9px 12px;font-size:13px;color:var(--text);vertical-align:middle}
+    .muted{color:var(--muted)}
+
+    /* ── BADGES ── */
+    .method-badge{display:inline-block;padding:3px 8px;border-radius:999px;font-weight:700;font-size:11px}
     .m-GET{background:#a7f3d0;color:#064e3b}
     .m-POST{background:#bfdbfe;color:#0b3b72}
     .m-PUT{background:#fde68a;color:#3c2c00}
     .m-DELETE{background:#fecaca;color:#4c0202}
-    .status-chip{padding:6px 8px;border-radius:8px;font-weight:600;font-size:12px}
+    .status-chip{padding:3px 8px;border-radius:6px;font-weight:600;font-size:11px}
     .s-2xx{background:rgba(34,197,94,0.12);color:#86efac}
     .s-4xx{background:rgba(250,204,21,0.08);color:#fef08a}
     .s-5xx{background:rgba(248,113,113,0.08);color:#fda4a4}
 
-    .duration-bar{
-      height:8px;background:var(--glass-2);border-radius:999px;overflow:hidden;width:160px;display:inline-block;vertical-align:middle;margin-left:8px;
-    }
-    .duration-fill{height:100%;background:linear-gradient(90deg,#ff9a8b,#ff6b6b);border-radius:999px;width:0%}
+    /* ── DURATION ── */
+    .dur-wrap{display:flex;align-items:center;gap:6px;white-space:nowrap}
+    .dur-s{font-size:13px;color:var(--muted)}
+    .duration-bar{height:6px;background:var(--glass-2);border-radius:999px;width:80px;flex-shrink:0;overflow:hidden}
+    .duration-fill{height:100%;background:linear-gradient(90deg,#ff9a8b,#ff6b6b);border-radius:999px;transition:width .3s}
+    .dur-ms{font-size:12px;color:var(--muted);font-weight:600}
+    .dur-ms.high{color:var(--danger);background:rgba(255,107,107,0.08);padding:2px 6px;border-radius:6px}
+    .row-high{background:linear-gradient(90deg,var(--danger-tint),transparent)}
+    [data-theme="light"] .row-high{background:rgba(255,0,0,.03)}
 
-    /* duration emphasis */
-    .duration-value{display:inline-block;margin-left:8px;color:var(--muted);font-weight:600}
-    .duration-high{color:var(--danger);background:rgba(255,107,107,0.06);padding:4px 8px;border-radius:8px}
-    .duration-fill.high{box-shadow:0 6px 14px rgba(255,107,107,0.10);transform:translateZ(0)}
-
-    .token{font-family:monospace;color:var(--muted);max-width:320px;display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .actions{display:inline-flex;gap:8px;align-items:center;white-space:nowrap}
-    .pill{background:rgba(255,255,255,0.02);padding:6px 8px;border-radius:999px;font-size:12px;color:var(--muted)}
-
-    /* details row */
-    tr.expanded + tr.details{display:table-row;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))}
-    tr.details td{padding:14px 18px;color:var(--muted);font-size:13px}
-    pre{white-space:pre-wrap;margin:0;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",monospace;font-size:13px;color:var(--code)}
-    /* use variable-driven color for code/path so light theme remains readable */
-    .path-code, code { color: var(--code); }
-
-    /* Prevent path text from forcing vertical stacking; keep it truncated inline */
-    .path-code{
-      display:inline-block;
-      max-width:260px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    /* ── PATH ── */
+    code.path{
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      color:var(--code);font-size:12px;
+      display:inline-block;max-width:220px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
       vertical-align:middle;
     }
 
-    /* ADDED: nicer/responsive details layout and scrolling to avoid breaking table */
-    .details-content{
-      display:flex;
-      gap:16px;
-      flex-wrap:wrap;
-      align-items:flex-start;
-      overflow:auto;
-    }
-    .details-col{
-      flex:1;
-      min-width:0; /* allow shrinking in table cell */
-      max-width:48%;
-      box-sizing:border-box;
-    }
-    .details-side{
-      min-width:180px;
-      width:220px;
-      box-sizing:border-box;
-    }
-    .details-pre{
-      background:rgba(255,255,255,0.01);
-      padding:10px;
-      border-radius:8px;
-      max-height:220px;
-      overflow:auto;
-      white-space:pre-wrap;
-      word-break:break-word;
+    /* ── TOKEN ── */
+    .token{
+      font-family:ui-monospace,monospace;font-size:11px;color:var(--muted);
+      max-width:160px;display:inline-block;white-space:nowrap;
+      overflow:hidden;text-overflow:ellipsis;vertical-align:middle;
     }
 
-    /* high-duration row (use class instead of inline style) */
-    .row-high{ background: linear-gradient(90deg, var(--danger-tint), transparent); }
+    /* ── ACTIONS ── */
+    .actions{display:inline-flex;gap:6px;white-space:nowrap}
+    .actions button{height:28px;padding:0 10px;font-size:12px}
 
-    /* light theme: remove red tint from rows, keep duration text/color visible */
-    [data-theme="light"] .row-high{ background: none; }
-    [data-theme="light"] .duration-high{ color: var(--danger); background: rgba(255,107,107,0.06); }
-    /* optionally soften duration bar highlight in light mode */
-    [data-theme="light"] .duration-fill.high{ box-shadow:none; background: linear-gradient(90deg,#ffb6b6,#ff9a9a); }
+    /* ── DETAILS ROW ── */
+    tr.details-row td{padding:0}
+    .details-inner{
+      padding:12px 16px;
+      background:linear-gradient(90deg,rgba(255,255,255,.015),rgba(255,255,255,.005));
+      border-bottom:1px solid var(--border);
+    }
+    .details-grid{display:flex;gap:12px;flex-wrap:wrap}
+    .details-block{flex:1;min-width:200px;max-width:360px}
+    .details-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+    pre.details-pre{
+      margin:0;
+      font-family:ui-monospace,monospace;font-size:12px;color:var(--code);
+      background:rgba(255,255,255,.02);
+      padding:8px 10px;border-radius:8px;
+      max-height:160px;overflow-y:auto;
+      white-space:pre-wrap;word-break:break-all;
+    }
+    .details-actions{display:flex;gap:8px;margin-top:8px}
+    .details-actions button{height:30px;font-size:12px}
+    .pill{
+      display:inline-block;background:rgba(255,255,255,.04);
+      padding:4px 8px;border-radius:6px;font-size:12px;color:var(--muted);
+      border:1px solid var(--border);margin-top:4px;
+    }
 
-    /* Mobile / narrow layout fixes */
-    @media (max-width:900px){
-      /* keep table wider than viewport so columns remain side-by-side;
-         user can scroll horizontally instead of cells wrapping vertically */
-      table{min-width:900px}
-      .table-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch}
+    /* ── EMPTY / LOADING ── */
+    #empty{padding:24px;text-align:center;color:var(--muted);font-size:14px}
 
-      /* Keep detail columns side-by-side and enable horizontal scrolling (no wrapping) */
-      .details-content{
-        display:flex;
-        flex-direction:row;       /* keep columns side-by-side */
-        flex-wrap:nowrap;        /* prevent stacking vertically */
-        gap:12px;
-        align-items:flex-start;
-        overflow-x:auto;         /* horizontal scrolling */
-        -webkit-overflow-scrolling: touch;
-        padding-bottom:6px;
-        box-sizing:border-box;
-      }
+    /* ── PAGINATION ── */
+    .pagination{
+      display:flex;gap:8px;align-items:center;justify-content:space-between;
+      padding:10px 14px;border-top:1px solid var(--border);
+      font-size:13px;color:var(--muted);flex-wrap:wrap;
+    }
+    .page-btns{display:flex;gap:6px}
+    .page-btns button{height:30px;min-width:30px;padding:0 10px;font-size:12px}
 
-      /* Make children fixed-ish so they sit side-by-side */
-      .details-col, .details-side{
-        flex:0 0 auto;
-        display:inline-block;
-        vertical-align:top;
-        box-sizing:border-box;
-      }
-      .details-col{width:320px; min-width:240px; max-width:320px;}
-      .details-side{width:220px; min-width:180px;}
-
-      /* allow normal wrapping inside table cells, but keep details area horizontally scrollable */
-      td{word-break:break-word; white-space:normal}
-      .details-pre{max-height:320px}
+    @media(max-width:600px){
+      body{padding:12px}
+      input[type="search"]{min-width:140px}
     }
   </style>
 </head>
 <body data-theme="dark">
-  <header>
-    <div class="title">
-      <div>
-        <h1>Dashboard Slow Endpoints</h1>
-        <div class="subtitle">Memantau permintaan API yang lambat — tampilkan detail, salin token, dan filter cepat</div>
-      </div>
+
+<header>
+  <div>
+    <h1>⚡ Dashboard Slow Endpoints</h1>
+    <div class="subtitle">Memantau permintaan API yang lambat</div>
+  </div>
+  <div class="controls-card">
+    <input id="q" type="search" placeholder="Cari path, filter, token…" />
+    <select id="methodFilter" title="Filter method">
+      <option value="">All methods</option>
+      <option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option>
+    </select>
+    <input id="date" class="date-input" type="date" title="Filter tanggal" />
+    <button id="refresh">Refresh</button>
+    <button id="exportBtn" class="ghost">Export CSV</button>
+    <button id="themeToggle" class="ghost" title="Toggle theme">🌙</button>
+  </div>
+</header>
+
+<div class="main-card">
+  <div class="card-header">
+    <div class="muted" style="font-size:12px">
+      Source: <span id="apiUrl" style="color:var(--code);font-family:monospace"></span>
     </div>
+    <div class="muted" style="font-size:12px" id="lastUpdated">—</div>
+  </div>
 
-    <div class="controls">
-      <div class="card" style="display:flex;gap:8px;align-items:center">
-        <input id="q" type="search" placeholder="Cari path, filter atau token…" />
-        <select id="methodFilter" title="Filter method">
-          <option value="">All methods</option>
-          <option>GET</option>
-          <option>POST</option>
-          <option>PUT</option>
-          <option>DELETE</option>
-        </select>
-        <!-- single date picker (select one day). no weekday shown by code, browser shows localized date -->
-        <input id="date" class="date-input" type="date" title="Tanggal" style="width:160px"/>
-        <button id="refresh">Refresh</button>
-        <button id="exportBtn" class="ghost" title="Export visible rows (CSV)">Export CSV</button>
-        <!-- Theme toggle button -->
-        <button id="themeToggle" class="ghost" title="Toggle theme">🌙</button>
-      </div>
+  <!-- Stats -->
+  <div class="stats-bar" id="statsBar" style="display:none">
+    <div class="stat">Total: <span class="stat-val" id="st-total">0</span></div>
+    <div class="stat">Tampil: <span class="stat-val" id="st-show">0</span></div>
+    <div class="stat">&gt;10s: <span class="stat-val stat-danger" id="st-slow">0</span></div>
+    <div class="stat">Avg: <span class="stat-val" id="st-avg">—</span></div>
+    <div class="stat">Max: <span class="stat-val stat-danger" id="st-max">—</span></div>
+  </div>
+
+  <!-- Table with virtual scroll -->
+  <div class="table-scroll">
+    <div id="vp">
+      <table id="table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Method</th>
+            <th>Path</th>
+            <th>Status</th>
+            <th class="sortable" id="durationHeader">Duration ↕</th>
+            <th>Filter</th>
+            <th>Token</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
     </div>
-  </header>
+  </div>
 
-  <main>
-    <div class="left card">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div class="muted">Source: <span id="apiUrl">https://visit-flow-auth.flexurio.com/file/slow-endpoints</span></div>
-        <div class="muted" id="lastUpdated">—</div>
-      </div>
+  <div id="empty" class="muted">Memuat data…</div>
 
-      <div class="table-wrap card" style="margin-top:12px;padding:0;">
-        <table id="table">
-          <thead>
-            <tr>
-              <th>Timestamp</th>
-              <th>Method</th>
-              <th>Path</th>
-              <th>Status</th>
-              <th style="cursor:pointer" id="durationHeader">Duration ▲▼</th>
-              <th>Filter</th>
-              <th>Token</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <div id="empty" class="muted" style="margin-top:12px">Memuat data…</div>
+  <!-- Pagination -->
+  <div class="pagination" id="pager" style="display:none">
+    <div id="pageInfo">Halaman 1 dari 1</div>
+    <div class="page-btns">
+      <button class="ghost" id="pagePrev">← Prev</button>
+      <button class="ghost" id="pageNext">Next →</button>
     </div>
-  </main>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span>Per halaman:</span>
+      <select id="pageSizeSelect" style="height:30px;padding:0 6px;width:70px">
+        <option value="25">25</option>
+        <option value="50" selected>50</option>
+        <option value="100">100</option>
+        <option value="0">Semua</option>
+      </select>
+    </div>
+  </div>
+</div>
 
-  <script>
-    const API_URL = 'https://visit-flow-auth.flexurio.com/file/slow-endpoints';
-    document.getElementById('apiUrl').textContent = API_URL;
-    const tbody = document.querySelector('#table tbody');
-    const empty = document.getElementById('empty');
-    const lastUpdated = document.getElementById('lastUpdated');
-    const refreshBtn = document.getElementById('refresh');
-    const qInput = document.getElementById('q');
-    const methodFilter = document.getElementById('methodFilter');
-    const dateInput = document.getElementById('date'); // single day filter
-    const exportBtn = document.getElementById('exportBtn');
-    const durationHeader = document.getElementById('durationHeader');
+<script>
+(function(){
+  'use strict';
 
-    let dataList = [];
-    let lastFiltered = [];
-    let sortDesc = true;
+  const API_URL = 'https://visit-flow-auth.flexurio.com/file/slow-endpoints';
+  document.getElementById('apiUrl').textContent = API_URL;
 
-    function parseDuration(d){
-      if(!d) return 0;
-      d=String(d).trim();
-      if(d.endsWith('s')) return Math.round(parseFloat(d.slice(0,-1))*1000);
-      if(d.endsWith('ms')) return Math.round(parseFloat(d.slice(0,-2)));
-      const n = parseFloat(d);
-      return Number.isFinite(n) ? Math.round(n) : 0;
-    }
+  const tbody    = document.getElementById('tbody');
+  const empty    = document.getElementById('empty');
+  const lastUpd  = document.getElementById('lastUpdated');
+  const refreshBtn = document.getElementById('refresh');
+  const qInput   = document.getElementById('q');
+  const mFilter  = document.getElementById('methodFilter');
+  const dateInp  = document.getElementById('date');
+  const exportBtn= document.getElementById('exportBtn');
+  const durHead  = document.getElementById('durationHeader');
+  const pager    = document.getElementById('pager');
+  const pagePrev = document.getElementById('pagePrev');
+  const pageNext = document.getElementById('pageNext');
+  const pageInfo = document.getElementById('pageInfo');
+  const pageSz   = document.getElementById('pageSizeSelect');
+  const statsBar = document.getElementById('statsBar');
 
-    function fmtDate(iso){
-      try{
-        const dt = new Date(iso);
-        return dt.toLocaleString();
-      }catch(e){ return iso }
-    }
+  let dataList   = [];     // raw data from API
+  let filtered   = [];     // after filters applied
+  let sortDesc   = true;
+  let page       = 0;
+  let expandedIdx= null;   // index in current page that is expanded
 
-    function methodClass(m){
-      if(!m) return '';
-      return 'm-'+m;
-    }
+  // ── Helpers ──────────────────────────────────────────────────────────
 
-    function statusClass(s){
-      if(!s) return '';
-      if(s>=500) return 's-5xx';
-      if(s>=400) return 's-4xx';
-      return 's-2xx';
-    }
+  function parseDuration(d){
+    if(!d) return 0;
+    d = String(d).trim();
+    if(d.endsWith('ms')) return Math.round(parseFloat(d));
+    if(d.endsWith('s'))  return Math.round(parseFloat(d)*1000);
+    const n = parseFloat(d);
+    return Number.isFinite(n) ? Math.round(n) : 0;
+  }
 
-    function truncate(t, n=36){ if(!t) return ''; return t.length>n ? t.slice(0,n-10)+'…'+t.slice(-8) : t }
+  function fmtDate(iso){
+    try{ return new Date(iso).toLocaleString(); }catch(e){ return iso||'' }
+  }
 
-    function clearDetails(){
-      document.querySelectorAll('tr.details').forEach(r=>r.remove());
-      document.querySelectorAll('tr.expanded').forEach(r=>r.classList.remove('expanded'));
-    }
+  function esc(s){
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
 
-    function render(list){
-      tbody.innerHTML='';
-      if(!Array.isArray(list) || list.length===0){ empty.textContent='Tidak ada data slow endpoints.'; return; }
-      empty.textContent='';
+  function truncate(t,n=32){
+    if(!t) return '';
+    return t.length>n ? t.slice(0,n-6)+'…'+t.slice(-4) : t;
+  }
 
-      // sort by timestamp (newest first)
-      const sorted = [...list].sort((a, b) => {
-        const ta = a && a.timestamp ? new Date(a.timestamp).getTime() : 0;
-        const tb = b && b.timestamp ? new Date(b.timestamp).getTime() : 0;
-        return tb - ta;
-      });
-      for(const item of sorted){
-        const durMs = parseDuration(item.duration);
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td title="${item.timestamp}">${fmtDate(item.timestamp)}</td>
-          <td><span class="method-badge ${methodClass(item.method)}">${item.method||''}</span></td>
-          <td><code class="path-code">${item.path||''}</code></td>
-          <td><span class="status-chip ${statusClass(item.status)}">${item.status??''}</span></td>
-          <td>
-            ${(durMs/1000).toFixed(3)} s
-            <div class="duration-bar" aria-hidden>
-              <div class="duration-fill ${durMs >= 10000 ? 'high' : ''}" style="width:${Math.min(100, durMs/2000)}%"></div>
-            </div>
-            <div class="duration-value ${durMs >= 10000 ? 'duration-high' : ''}">${durMs} ms</div>
-          </td>
-          <td title="${item.filter||''}" class="muted" style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${truncate(item.filter||'')}</td>
-          <td><span class="token" title="${item.token||''}">${truncate(item.token||'')}</span></td>
-          <td class="actions">
-            <button class="ghost" data-action="copy" title="Copy token">Copy</button>
-            <button class="ghost" data-action="details" title="Toggle details">Details</button>
-          </td>
-        `;
-        // highlight long requests
-        if(durMs >= 10000) tr.classList.add('row-high');
+  function methodClass(m){ return m ? 'm-'+m : '' }
+  function statusClass(s){
+    if(!s) return '';
+    return s>=500?'s-5xx':s>=400?'s-4xx':'s-2xx';
+  }
 
-        // attach handlers
-        tr.addEventListener('click', (ev)=>{
-          if(ev.target.closest('button')) return; // skip button clicks
-          toggleDetails(tr, item);
-        });
+  function pageSize(){
+    const v = parseInt(pageSz.value);
+    return v === 0 ? Infinity : v;
+  }
 
-        tbody.appendChild(tr);
+  // ── Stats ─────────────────────────────────────────────────────────────
 
-        // attach button handlers
-        tr.querySelector('[data-action="copy"]').addEventListener('click', (e)=>{
-          e.stopPropagation();
-          navigator.clipboard.writeText(item.token || '').then(()=> {
-            e.target.textContent = 'Copied';
-            setTimeout(()=> e.target.textContent = 'Copy', 1200);
-          }).catch(()=> { e.target.textContent = 'Fail'; setTimeout(()=> e.target.textContent = 'Copy', 1200); });
-        });
-        tr.querySelector('[data-action="details"]').addEventListener('click', (e)=>{
-          e.stopPropagation();
-          toggleDetails(tr, item);
-        });
-      }
-    }
+  function updateStats(list){
+    if(!list||!list.length){ statsBar.style.display='none'; return; }
+    statsBar.style.display='flex';
+    const total = dataList.length;
+    const slow  = list.filter(it => parseDuration(it.duration)>=10000).length;
+    const durs  = list.map(it => parseDuration(it.duration));
+    const avg   = durs.reduce((a,b)=>a+b,0)/durs.length;
+    const max   = Math.max(...durs);
+    document.getElementById('st-total').textContent = total;
+    document.getElementById('st-show').textContent  = list.length;
+    document.getElementById('st-slow').textContent  = slow;
+    document.getElementById('st-avg').textContent   = (avg/1000).toFixed(2)+'s';
+    document.getElementById('st-max').textContent   = (max/1000).toFixed(2)+'s';
+  }
 
-    function toggleDetails(tr, item){
-      const already = tr.classList.contains('expanded');
-      clearDetails();
-      if(already) return;
-      tr.classList.add('expanded');
-      const details = document.createElement('tr');
-      details.className='details';
-      const td = document.createElement('td');
-      td.colSpan = 8;
-      td.innerHTML = `
-        <div class="details-content">
-          <div class="details-col">
-            <div class="muted">Filter</div>
-            <pre class="details-pre">${item.filter||'—'}</pre>
-          </div>
-          <div class="details-col">
-            <div class="muted">Token</div>
-            <pre class="details-pre" id="full-token">${item.token||'—'}</pre>
-            <div style="margin-top:8px;display:flex;gap:8px">
-              <button id="copyFullToken">Copy token</button>
-              <button id="copyCurl" class="ghost">Copy curl</button>
-            </div>
-          </div>
-          <div class="details-side">
-            <div class="muted">Request info</div>
-            <div style="margin-top:6px"><span class="pill">Method: ${item.method||''}</span></div>
-            <div style="margin-top:6px"><span class="pill">Status: ${item.status||''}</span></div>
-            <div style="margin-top:12px" class="muted">Timestamp</div>
-            <div style="margin-top:6px">${fmtDate(item.timestamp)}</div>
-          </div>
-        </div>
-      `;
-      details.appendChild(td);
-      tr.after(details);
+  // ── Render ONE row (returns <tr> element) ─────────────────────────────
 
-      // copy token
-      document.getElementById('copyFullToken').addEventListener('click', ()=>{
-        navigator.clipboard.writeText(item.token||'').then(()=> {
-          const btn = document.getElementById('copyFullToken');
-          btn.textContent = 'Copied';
-          setTimeout(()=> btn.textContent = 'Copy token', 1200);
-        });
-      });
+  function makeRow(item, pageIdx){
+    const durMs  = parseDuration(item.duration);
+    const pct    = Math.min(100, durMs/2000);
+    const isHigh = durMs >= 10000;
 
-      // copy curl (better formatted, responsive-friendly)
-      document.getElementById('copyCurl').addEventListener('click', ()=>{
-        try{
-          const baseOrigin = (()=> {
-            try { return new URL(API_URL).origin; } catch(e){ return window.location.origin; }
-          })();
-          const rawPath = item.path || '';
-          const path = rawPath.startsWith('http') ? rawPath : (baseOrigin.replace(/\/$/,'') + rawPath);
-          const method = (item.method || 'GET').toUpperCase();
-          const token = item.token || '';
-          const filter = item.filter || '';
+    const tr = document.createElement('tr');
+    if(isHigh) tr.classList.add('row-high');
+    tr.dataset.idx = pageIdx;
 
-          // for GET, append filter as query string if present
-          const fullUrl = (method === 'GET' && filter)
-            ? path + (path.includes('?') ? '&' : '?') + filter
-            : path;
+    tr.innerHTML =
+      `<td class="muted" style="white-space:nowrap;font-size:12px">${fmtDate(item.timestamp)}</td>`+
+      `<td><span class="method-badge ${methodClass(item.method)}">${esc(item.method)}</span></td>`+
+      `<td><code class="path" title="${esc(item.path)}">${esc(item.path||'')}</code></td>`+
+      `<td><span class="status-chip ${statusClass(item.status)}">${esc(item.status??'')}</span></td>`+
+      `<td><div class="dur-wrap">`+
+        `<span class="dur-s">${(durMs/1000).toFixed(3)}s</span>`+
+        `<div class="duration-bar" aria-hidden="true"><div class="duration-fill" style="width:${pct}%"></div></div>`+
+        `<span class="dur-ms${isHigh?' high':''}">${durMs}ms</span>`+
+      `</div></td>`+
+      `<td class="muted" style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px" title="${esc(item.filter)}">${esc(truncate(item.filter))}</td>`+
+      `<td><span class="token" title="${esc(item.token)}">${esc(truncate(item.token))}</span></td>`+
+      `<td><div class="actions">`+
+        `<button class="ghost btn-copy">Copy</button>`+
+        `<button class="ghost btn-details">Details</button>`+
+      `</div></td>`;
 
-          // Escape single quotes in data payload
-          const escapeSingle = s => s.replace(/'/g, `'\"'\"'`);
+    // Events — delegated to buttons
+    tr.querySelector('.btn-copy').addEventListener('click', e => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(item.token||'').then(()=>{
+        const b = e.target; b.textContent='Copied'; setTimeout(()=>b.textContent='Copy',1200);
+      }).catch(()=>{ e.target.textContent='Fail'; setTimeout(()=>e.target.textContent='Copy',1200); });
+    });
 
-          let curlLines = [];
-          curlLines.push(`curl -X ${method} '${fullUrl}' \\`);
-          curlLines.push(`  -H 'Accept: application/json'`);
-          if(token) curlLines.push(`  -H 'Authorization: Bearer ${token}'`);
+    tr.querySelector('.btn-details').addEventListener('click', e => {
+      e.stopPropagation();
+      toggleDetails(tr, item, pageIdx);
+    });
 
-          if(method !== 'GET' && filter) {
-            // treat filter as x-www-form-urlencoded payload
-            curlLines.push(`  -H 'Content-Type: application/x-www-form-urlencoded' \\`);
-            curlLines.push(`  --data '${escapeSingle(filter)}'`);
-          }
+    tr.addEventListener('click', () => toggleDetails(tr, item, pageIdx));
 
-          curlLines.push(`  --compressed`);
-          const curl = curlLines.join('\n');
+    return tr;
+  }
 
-          navigator.clipboard.writeText(curl).then(()=> {
-            const btn = document.getElementById('copyCurl');
-            btn.textContent = 'Copied';
-            setTimeout(()=> btn.textContent = 'Copy curl', 1200);
-          }).catch(()=>{
-            const btn = document.getElementById('copyCurl');
-            btn.textContent = 'Fail';
-            setTimeout(()=> btn.textContent = 'Copy curl', 1200);
-          });
-        }catch(e){
-          const btn = document.getElementById('copyCurl');
-          btn.textContent = 'Fail';
-          setTimeout(()=> btn.textContent = 'Copy curl', 1200);
-        }
-      });
-    }
+  // ── Details row ───────────────────────────────────────────────────────
 
-    function applyFilters(){
-      const q = qInput.value.trim().toLowerCase();
-      const method = methodFilter.value;
-      // single-day filter: if a date is chosen, match items whose timestamp falls on that local day
-      const selected = dateInput && dateInput.value ? new Date(dateInput.value) : null;
-      const from = selected ? new Date(selected) : null;
-      if(from) from.setHours(0,0,0,0);
-      const to = selected ? new Date(selected) : null;
-      if(to) to.setHours(23,59,59,999);
+  function makeDetailsRow(item){
+    const detailsTr = document.createElement('tr');
+    detailsTr.className = 'details-row';
 
-      const filtered = dataList.filter(it=>{
-        if(method && (it.method||'') !== method) return false;
-        if((from || to) && it.timestamp){
-          const itDate = new Date(it.timestamp);
-          if(from && itDate < from) return false;
-          if(to && itDate > to) return false;
-        }
-        if(!q) return true;
-        const hay = [it.path, it.filter, it.token, it.method, String(it.status)].join(' ').toLowerCase();
-        return hay.includes(q);
-      });
+    const td = document.createElement('td');
+    td.colSpan = 8;
+    td.innerHTML =
+      `<div class="details-inner">`+
+        `<div class="details-grid">`+
+          `<div class="details-block">`+
+            `<div class="details-label">Filter</div>`+
+            `<pre class="details-pre">${esc(item.filter||'—')}</pre>`+
+          `</div>`+
+          `<div class="details-block">`+
+            `<div class="details-label">Token</div>`+
+            `<pre class="details-pre">${esc(item.token||'—')}</pre>`+
+            `<div class="details-actions">`+
+              `<button id="dc-token">Copy token</button>`+
+              `<button id="dc-curl" class="ghost">Copy curl</button>`+
+            `</div>`+
+          `</div>`+
+          `<div class="details-block" style="max-width:200px">`+
+            `<div class="details-label">Info</div>`+
+            `<div><span class="pill">Method: ${esc(item.method||'')}</span></div>`+
+            `<div><span class="pill">Status: ${esc(String(item.status??''))}</span></div>`+
+            `<div style="margin-top:8px;font-size:12px;color:var(--muted)">${fmtDate(item.timestamp)}</div>`+
+          `</div>`+
+        `</div>`+
+      `</div>`;
 
-      // If no filters are applied, limit to 10 latest results.
-      // When any filter/search/date/method is used, show all matching rows.
-      const hasFilter = Boolean(q || method || selected);
-      lastFiltered = hasFilter ? filtered : filtered.slice(0, 10);
-      render(lastFiltered);
-    }
+    detailsTr.appendChild(td);
 
-    let debounceTimer = null;
-    [qInput, methodFilter, dateInput].forEach(el=>{
-      if(!el) return;
-      el.addEventListener('input', ()=> {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(applyFilters, 220);
+    // Bind copy buttons
+    td.querySelector('#dc-token').addEventListener('click', ()=>{
+      navigator.clipboard.writeText(item.token||'').then(()=>{
+        const b=td.querySelector('#dc-token'); b.textContent='Copied'; setTimeout(()=>b.textContent='Copy token',1200);
       });
     });
 
-    async function load(){
+    td.querySelector('#dc-curl').addEventListener('click', ()=>{
       try{
-        refreshBtn.disabled = true;
-        refreshBtn.textContent = 'Memuat…';
-        const res = await fetch(API_URL);
-        if(!res.ok) throw new Error('HTTP ' + res.status);
-        const json = await res.json();
-        if(!json||!Array.isArray(json.data)){ empty.textContent='Response tidak sesuai.'; return; }
-        dataList = json.data;
-        applyFilters();
-        lastUpdated.textContent = 'Terakhir: ' + new Date().toLocaleTimeString();
-      }catch(err){
-        empty.textContent = 'Gagal memuat: ' + (err.message || err);
-      }finally{
-        refreshBtn.disabled = false;
-        refreshBtn.textContent = 'Refresh';
+        const origin = (() => { try{ return new URL("https://visit-flow-api.flexurio.com").origin; }catch(e){ return window.location.origin; } })();
+        const rawPath = item.path||'';
+        const path = rawPath.startsWith('http') ? rawPath : origin.replace(/\/$/,'')+rawPath;
+        const method = (item.method||'GET').toUpperCase();
+        const token  = item.token||'';
+        const filter = item.filter||'';
+        const fullUrl = (method==='GET'&&filter) ? path+(path.includes('?')?'&':'?')+filter : path;
+        const escSingle = s => s.replace(/'/g,`'"'"'`);
+        let lines = [`curl -X ${method} '${fullUrl}' \\`, `  -H 'Accept: application/json'`];
+        if(token) lines.push(`  -H 'Authorization: Bearer ${token}'`);
+        if(method!=='GET'&&filter){
+          lines.push(`  -H 'Content-Type: application/x-www-form-urlencoded' \\`);
+          lines.push(`  --data '${escSingle(filter)}'`);
+        }
+        lines.push('  --compressed');
+        navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+          const b=td.querySelector('#dc-curl'); b.textContent='Copied'; setTimeout(()=>b.textContent='Copy curl',1200);
+        });
+      }catch(e){
+        const b=td.querySelector('#dc-curl'); b.textContent='Fail'; setTimeout(()=>b.textContent='Copy curl',1200);
       }
-    }
-
-    refreshBtn.addEventListener('click', load);
-    exportBtn.addEventListener('click', ()=>{
-      if(!lastFiltered || lastFiltered.length === 0){
-        exportBtn.textContent = 'No data';
-        setTimeout(()=> exportBtn.textContent = 'Export CSV', 1200);
-        return;
-      }
-      const rows = lastFiltered.map(it => {
-        const dur = parseDuration(it.duration);
-        // escape double quotes by doubling them
-        const esc = s => `"${String(s ?? '').replace(/"/g, '""')}"`;
-        return [
-          esc(it.timestamp),
-          esc(it.method),
-          esc(it.path),
-          esc(it.status),
-          esc(dur),
-          esc(it.filter),
-          esc(it.token)
-        ].join(',');
-      });
-      const header = ['timestamp','method','path','status','duration_ms','filter','token'].join(',');
-      const csv = [header, ...rows].join('\n');
-      const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'slow-endpoints.csv';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      exportBtn.textContent = 'Exported';
-      setTimeout(()=> exportBtn.textContent = 'Export CSV', 1500);
     });
 
-    durationHeader.addEventListener('click', ()=> {
-      sortDesc = !sortDesc;
+    return detailsTr;
+  }
+
+  function toggleDetails(tr, item, pageIdx){
+    // remove existing details
+    const existingDet = tbody.querySelector('.details-row');
+    if(existingDet) existingDet.remove();
+
+    if(expandedIdx === pageIdx){
+      // clicking same row → collapse
+      expandedIdx = null;
+      return;
+    }
+    expandedIdx = pageIdx;
+    const det = makeDetailsRow(item);
+    tr.after(det);
+  }
+
+  // ── Render page ───────────────────────────────────────────────────────
+
+  function renderPage(){
+    expandedIdx = null;
+
+    // Use DocumentFragment to batch-insert all rows
+    const frag   = document.createDocumentFragment();
+    const ps     = pageSize();
+    const total  = filtered.length;
+    const pages  = ps === Infinity ? 1 : Math.max(1, Math.ceil(total/ps));
+    page = Math.min(page, pages-1);
+
+    const start  = ps === Infinity ? 0 : page*ps;
+    const end    = ps === Infinity ? total : Math.min(total, start+ps);
+    const slice  = filtered.slice(start, end);
+
+    if(slice.length === 0){
+      empty.style.display = 'block';
+      empty.textContent   = 'Tidak ada data slow endpoints.';
+      pager.style.display = 'none';
+    } else {
+      empty.style.display = 'none';
+      for(let i=0; i<slice.length; i++){
+        frag.appendChild(makeRow(slice[i], i));
+      }
+      pager.style.display = 'flex';
+      pageInfo.textContent = `Halaman ${page+1} dari ${pages} · ${start+1}–${end} / ${total}`;
+      pagePrev.disabled = page===0;
+      pageNext.disabled = page>=pages-1;
+    }
+
+    tbody.innerHTML = '';
+    tbody.appendChild(frag);
+  }
+
+  // ── Filter & sort ─────────────────────────────────────────────────────
+
+  function applyFilters(){
+    const q      = qInput.value.trim().toLowerCase();
+    const method = mFilter.value;
+    const selDate= dateInp.value ? new Date(dateInp.value) : null;
+    let from=null, to=null;
+    if(selDate){
+      from = new Date(selDate); from.setHours(0,0,0,0);
+      to   = new Date(selDate); to.setHours(23,59,59,999);
+    }
+
+    filtered = dataList.filter(it => {
+      if(method && it.method !== method) return false;
+      if(from && it.timestamp){
+        const d = new Date(it.timestamp);
+        if(d<from||d>to) return false;
+      }
+      if(q){
+        const hay = [it.path,it.filter,it.token,it.method,String(it.status||'')].join(' ').toLowerCase();
+        if(!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    // Sort by duration
+    filtered.sort((a,b) => {
+      const da = parseDuration(a.duration);
+      const db = parseDuration(b.duration);
+      return sortDesc ? db-da : da-db;
+    });
+
+    page = 0;
+    updateStats(filtered);
+    renderPage();
+  }
+
+  // ── Debounced input handlers ──────────────────────────────────────────
+
+  let debTimer=null;
+  [qInput,mFilter,dateInp,pageSz].forEach(el=>{
+    if(!el) return;
+    el.addEventListener('input',()=>{
+      clearTimeout(debTimer);
+      debTimer = setTimeout(applyFilters, 250);
+    });
+  });
+
+  // ── Pagination buttons ────────────────────────────────────────────────
+
+  pagePrev.addEventListener('click',()=>{ if(page>0){ page--; renderPage(); } });
+  pageNext.addEventListener('click',()=>{
+    const ps    = pageSize();
+    const pages = ps===Infinity?1:Math.ceil(filtered.length/ps);
+    if(page<pages-1){ page++; renderPage(); }
+  });
+
+  // ── Sort toggle ───────────────────────────────────────────────────────
+
+  durHead.addEventListener('click',()=>{
+    sortDesc = !sortDesc;
+    durHead.textContent = 'Duration '+(sortDesc?'↓':'↑');
+    applyFilters();
+  });
+
+  // ── Load data ─────────────────────────────────────────────────────────
+
+  async function load(){
+    refreshBtn.disabled  = true;
+    refreshBtn.textContent = 'Memuat…';
+    empty.style.display  = 'block';
+    empty.textContent    = 'Memuat data…';
+    tbody.innerHTML      = '';
+    pager.style.display  = 'none';
+    statsBar.style.display = 'none';
+
+    try{
+      const res  = await fetch(API_URL, {cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const json = await res.json();
+      if(!json||!Array.isArray(json.data)) throw new Error('Response tidak sesuai');
+      dataList = json.data;
       applyFilters();
-    });
-
-    // Theme (light / dark) ----------------------------------------------
-    const themeToggle = document.getElementById('themeToggle');
-    const THEME_KEY = 'slowendpoints_theme';
-
-    function applyTheme(theme){
-      const root = document.documentElement;
-      if(theme === 'light') {
-        root.setAttribute('data-theme', 'light');
-        document.body.setAttribute('data-theme','light');
-        themeToggle.textContent = '☀️';
-        themeToggle.title = 'Light mode';
-      } else {
-        root.setAttribute('data-theme', 'dark');
-        document.body.setAttribute('data-theme','dark');
-        themeToggle.textContent = '🌙';
-        themeToggle.title = 'Dark mode';
-      }
-      try { localStorage.setItem(THEME_KEY, theme); } catch(e){}
+      lastUpd.textContent = 'Terakhir: '+new Date().toLocaleTimeString();
+    }catch(err){
+      empty.style.display = 'block';
+      empty.textContent   = 'Gagal memuat: '+(err.message||err);
+    }finally{
+      refreshBtn.disabled   = false;
+      refreshBtn.textContent= 'Refresh';
     }
+  }
 
-    function detectInitialTheme(){
-      try{
-        const stored = localStorage.getItem(THEME_KEY);
-        if(stored) return stored;
-      }catch(e){}
-      // use prefers-color-scheme
-      return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-    }
+  refreshBtn.addEventListener('click', load);
 
-    themeToggle.addEventListener('click', ()=>{
-      const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-      applyTheme(current === 'light' ? 'dark' : 'light');
+  // ── Export CSV ────────────────────────────────────────────────────────
+
+  exportBtn.addEventListener('click',()=>{
+    if(!filtered.length){ exportBtn.textContent='No data'; setTimeout(()=>exportBtn.textContent='Export CSV',1200); return; }
+    const esc2 = s => `"${String(s??'').replace(/"/g,'""')}"`;
+    const rows = filtered.map(it=>[
+      esc2(it.timestamp),esc2(it.method),esc2(it.path),esc2(it.status),
+      esc2(parseDuration(it.duration)),esc2(it.filter),esc2(it.token)
+    ].join(','));
+    const csv = ['timestamp,method,path,status,duration_ms,filter,token',...rows].join('\n');
+    const a = Object.assign(document.createElement('a'),{
+      href: URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'})),
+      download: 'slow-endpoints.csv'
     });
+    document.body.appendChild(a); a.click(); a.remove();
+    exportBtn.textContent='Exported'; setTimeout(()=>exportBtn.textContent='Export CSV',1500);
+  });
 
-    // apply initial theme
-    applyTheme(detectInitialTheme());
+  // ── Theme ─────────────────────────────────────────────────────────────
 
-    // initial load
-    load();
-  </script>
+  const themeBtn = document.getElementById('themeToggle');
+  const THEME_KEY = 'se_theme';
+
+  function applyTheme(t){
+    document.documentElement.setAttribute('data-theme',t);
+    document.body.setAttribute('data-theme',t);
+    themeBtn.textContent = t==='light'?'☀️':'🌙';
+    try{ localStorage.setItem(THEME_KEY,t); }catch(e){}
+  }
+
+  themeBtn.addEventListener('click',()=>{
+    applyTheme(document.body.getAttribute('data-theme')==='light'?'dark':'light');
+  });
+
+  (function(){
+    let stored=''; try{ stored=localStorage.getItem(THEME_KEY)||''; }catch(e){}
+    applyTheme(stored||(window.matchMedia&&window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'));
+  })();
+
+  // ── Init ──────────────────────────────────────────────────────────────
+  load();
+
+})();
+</script>
 </body>
 </html>
